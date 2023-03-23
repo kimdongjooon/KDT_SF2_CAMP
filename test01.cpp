@@ -25,5 +25,23 @@ int main(){
     str2 = " 김동준입니다.";
     std::cout << str1$ + str2 ;
 
+    // 변수 입력 받기
+    /*int input_a;
+    std::string input_b;
 
+    std::cin >> input_a;
+    std::cin >> input_b;
+
+    std::cout << input_a << input_b;
+    */
+   int ab = 5;
+   if (ab > 10){
+    std::cout << "\n a는 10보다 큽니다.";
+   } 
+   else if (ab == 5){
+    std::cout << "\n a는 5입니다.";
+   }
+   else {
+    std::cout << "\n a는 10보다 작거나 5가 아닙니다.";
+   }
 }
