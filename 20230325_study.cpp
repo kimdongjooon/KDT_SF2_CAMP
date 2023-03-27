@@ -145,10 +145,10 @@ int main(){
     // 일차원 동적배열 > int *arr1 = new int[num]; > {int, int, int} 형
     // 이차원 동적배열 > { {int,int}, {int,int}, {int,int} }
     int **arr2 = new int *[num]; // num은 1차원 배열 개수 지정
-
+    // { {}, {}, {}, {}, {}} 할당
     for (int i = 0; i < num; i++){
         arr2[i] = new int[num];
-        // { { , , , ,}, { , , , , }, ...}
+        // { { , , , , }, { , , , , }, { , , , , }, { , , , , }, { , , , , } } 할당
     }
 
     for (int i =0 ; i < num; i ++){
@@ -161,9 +161,11 @@ int main(){
 
     for (int i = 0 ; i <num; i++){
         delete[] arr2[i];
+        // { {}, {}, {}, {}, {} } 으로 해제
     }
 
     delete[] arr2;
+    // {} 으로 해제
     
 
 }
