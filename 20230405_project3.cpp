@@ -49,7 +49,6 @@ int main(){
             for(int j = 0 ; j<user_lst.size();j++){
                 // cout<<"2 : j = "<<j<<endl;
                 if(user_lst[j]==num){
-                    cout<<j <<" -- "<<user_lst[j] <<" - "<<num; 
                     cout<<"이미 입력된 숫자입니다. 다시 입력해주세요. "<<endl;
                     dup_count=1;
                     break;
