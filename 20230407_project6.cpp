@@ -88,14 +88,17 @@ void Operator_func(char o, int n1, int n2){
         }
         case '-':{
             Calculator* cal = new Minus(n1,n2);
+            delete cal;
             break;
         }
         case '/':{
             Calculator* cal = new Divide(n1,n2);
+            delete cal;
             break;
         }
         case '*':{
             Calculator* cal = new Multi(n1,n2);
+            delete cal;
             break;
         }
         default:
