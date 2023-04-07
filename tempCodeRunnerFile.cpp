@@ -1,2 +1,2 @@
 
-                cout<<"2 : j = "<<j<<endl;
+            if(user_num == "q"){

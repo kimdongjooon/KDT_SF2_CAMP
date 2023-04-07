@@ -1,8 +1,5 @@
 #include <iostream>
 #include <vector>
-// #include <algorithm>
-// #include <random>
-#include <cstdlib>
 
 using namespace std;
  
@@ -15,8 +12,11 @@ int main(){
     int num;
     cin >> num;
 
-    for(int i= 1; i<num*num+1; i++){
+    for(int i = 1; i<num*num+1; i++){
         mabangjin.push_back(i);
+    }
+    for(int i = 0 ; i<mabangjin.size();i++){
+        cout<<mabangjin[i]<<" ";
     }
 
     // 벡터 2차원 초기화
