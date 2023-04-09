@@ -27,7 +27,8 @@ using namespace std;
 //              그리고 무기를 ( 노말:56% , 레어:30%, 유니크:10%, 레전더리:3%, 신화:1% ) 확률적으로 드랍함.
 //              구현 예정 : 플레이어 공격 후 몬스터도 1~10 만큼 랜덤으로 공격
 //      보스잡기 : 총 10번의 공격을 하여 총데미지 합산 및 출력.
-//      무기강화 : 미구현.
+//      무기강화 : 강화 강화횟수 제한 x, 2개이상의 소유중인 무기를 선택하여 50%확률로 강화. 
+//               강화성공시 해당무기 공격력, 치명타데미지 만큼 캐릭터의 강화 보너스 스텟 추가.
 //      종료 : 게임을 종료
 // 3. 무기 클래스
 //      - 필드
@@ -98,13 +99,21 @@ class Character{
     int base_attack_damage = 10;
     double critical_hit = 5;
     int critical_damage = 100;
+    
     string weapon_grade="미장착";
 
     // 기능
     public:
         string Character_name; // 플레이어 이름.
         vector <int> weapon_info; // 무기데미지, 무기 치명타확률, 무기 치명타 데미지
-        vector <int> get_weapon; // 인덱스순 노말 레어 유니크 레전더리 신화
+        vector <int> get_weapon; // 인덱스순 노말 레어 유니크 레전더리 무기 갯수 신화
+        vector <string> grade_table = {"노멀","레어","유니크","레전더리","신화"};
+        vector <int> damage_table;
+        vector <int> critical_table;
+        vector <int> weapon_upgrade_set;
+        int bonus_weapon_damage = 0;
+        int bonus_weapon_critical_damage = 0;
+
         // 캐릭터 처음 생성
         Character(string name){
             this->Character_name=name;
@@ -136,12 +145,17 @@ class Character{
             }else if (!weapon_info.empty()){
                 cout<<"   무기 공격력 : "<<weapon_info[0]<<" ("<<weapon_grade<<" 무기) - 착용중"<<endl;
             }
-            cout<<"   총 공격력 : "<<getDamage()<<endl;
-            cout<<"   치명타 확률 : "<<getCritical_hit()<<"%"<<endl;
-            cout<<"   치명타 데미지 : "<<getCritical_damage_p()<<"%"<<endl;
+            cout<<"   무기 강화 보너스 (공격력) : "<<bonus_weapon_damage<<endl;
+            cout<<"   *** 총 공격력 : "<<getDamage()<<endl;
+            cout<<"   기본 치명타 확률 : "<<critical_hit<<"%"<<endl;
+            cout<<"   무기 치명타 확률 : "<<weapon_info[1]<<"%"<<endl;
+            cout<<"   *** 총 치명타 확률 : "<<getCritical_hit()<<"%"<<"   (최대 100%)"<<endl;
+            cout<<"   기본 치명타 데미지 : "<<critical_damage<<"%"<<endl;
+            cout<<"   무기 강화 보너스 (치명타 데미지) : "<<bonus_weapon_critical_damage<<"%"<<endl;
+            cout<<"   *** 총 치명타 데미지 : "<<getCritical_damage_p()<<"%"<<endl;
         }
         int getDamage(){
-            return base_attack_damage+weapon_info[0];
+            return base_attack_damage+weapon_info[0]+bonus_weapon_damage;
         }
 
         double getCritical_damage(){   
@@ -149,11 +163,18 @@ class Character{
         }
 
         double getCritical_hit(){
+            if(critical_hit+(double)weapon_info[1]>=100){
+                return 100;
+            }
             return critical_hit+(double)weapon_info[1];
         }
 
         double getCritical_damage_p(){   
-            return critical_damage+weapon_info[2];
+            return critical_damage+weapon_info[2]+bonus_weapon_critical_damage;
+        }
+
+        void get_weapon_view(){
+            cout<<"   노말 : "<<get_weapon[0]<<  " 레어 : "<<get_weapon[1]<<"   유니크 : "<<get_weapon[2]<<"   레전더리 : "<<get_weapon[3]<<"   신화 : "<<get_weapon[4] <<endl;
         }
 
         void weapon_swaping(Weapon W){
@@ -166,7 +187,7 @@ class Character{
 
         void weapon_equip(){
             cout<<"   ===== 현재 무기 현황 ====="<<endl;
-            cout<<"   노말:"<<get_weapon[0]<<" 레어:"<<get_weapon[1]<<" 유니크:"<<get_weapon[2]<<" 레전더리:"<<get_weapon[3]<<" 신화:"<<get_weapon[4] <<endl;
+            get_weapon_view();
             cout<<"   어떤 무기를 착용하시겠습니까? "<<endl;
             cout<<"   (0: 미착용, 1:노말, 2:레어, 3:유니크, 4:레전더리, 5:신화 ) ";
             int weapon_num;
@@ -325,6 +346,117 @@ class Character{
             cout<<"월드 보스에게 가한 총 데미지는 "<<total_damage<<"입니다."<<endl;   
         }
 
+
+        // 무기 강화 보너스 적용 인덱스 마다 10, 100, 300, 1000, 5000 추가
+        int weapon_damage_upgrade_apply(){
+            vector <int> tmp_v;
+            int total = 0;
+            for (int i = 0; i<weapon_upgrade_set.size();i++){
+                tmp_v.push_back(damage_table[i]*weapon_upgrade_set[i]);
+            }
+            for (int i = 0; i<tmp_v.size();i++){
+                total +=tmp_v[i];    
+            }
+            return total;
+        }
+
+        int weapon_critical_damage_upgrade_apply(){
+            vector <int> tmp_v;
+            int total = 0;
+            for (int i = 0; i<weapon_upgrade_set.size();i++){
+                tmp_v.push_back(critical_table[i]* weapon_upgrade_set[i]);
+            }
+            for (int i = 0; i<tmp_v.size();i++){
+                total +=tmp_v[i];    
+            }
+            return total;
+        }
+        void weapon_upgrade_view(){
+            for (int i = 0; i<weapon_upgrade_set.size();i++){
+                cout<<"   "<<i+1<<" : "<<grade_table[i]<<"   (+"<<weapon_upgrade_set[i]<<"강)   +"<<critical_table[i]* weapon_upgrade_set[i]<<endl;
+            }
+        }
+        
+        
+        // 강화소
+        void weapon_upgrade(){
+            cout<<"   ===== 강화소에 오신것을 환영합니다!! ===== "<<endl;
+            while(1){
+                cout<<endl;
+                cout<<"   ======== 현재 무기 현황  ======== "<<endl;
+                get_weapon_view();
+                cout<<"             1. 강 화 하 기  "<<endl;
+                cout<<"             2. 무기강화현황  "<<endl;
+                cout<<"             3.  나 가 기  "<<endl;
+                cout<<"              입력창 : ";
+                int option;
+                cin >> option;
+                if(option==1){
+                    weapon_upgrade_view();
+                    cout<<endl<<"   강화할 무기를 선택해주세요. (1~5) : ";
+                    int weapon_num;
+                    cin >> weapon_num;
+                    if(weapon_num>grade_table.size()){
+                        cout<<"   해당 무기가 없습니다. "<<endl;
+                        continue;
+                    }
+                    
+                    if (get_weapon[weapon_num-1]>1){
+                        cout<<"   "<<grade_table[weapon_num-1]<<"무기를 선택하셨습니다! "<<endl;
+                        cout<<"   "<<grade_table[weapon_num-1]<<"무기를 강화하시겠습니까? - 성공률 : 50% ( Y / N ) : ";
+                        string ans;
+                        cin >> ans;
+                        if(ans=="Y" || ans=="y"){
+                            srand(time(NULL));
+                            int success_point = rand()%100+1;
+                            if(1<=success_point && success_point<=50){
+                                cout <<"   "<<grade_table[weapon_num-1]<<"무기 강화 성공 !!!!"<<endl;
+                                weapon_upgrade_set[weapon_num-1]++;
+                                bonus_weapon_damage = weapon_damage_upgrade_apply();
+                                bonus_weapon_critical_damage = weapon_critical_damage_upgrade_apply();
+                                get_weapon[weapon_num-1]--;
+                            }else if(50<success_point && success_point<=100){
+                                cout <<"   "<<grade_table[weapon_num-1]<<"무기 강화 실패 ...."<<endl;
+                                get_weapon[weapon_num-1]--;
+                            }else{
+                                cout<<"오오류"<<endl;
+                            }
+                        }
+                        else if(ans=="N" || ans=="n")
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            cout<<"Y(y) or N(n) 을 선택해주세요."<<endl;
+                        }
+
+                    }else if(get_weapon[weapon_num-1]<=1){
+                        cout<<"   최소 2개이상 부터 강화할 수 있습니다."<<endl;
+                        continue;
+                    }
+
+                }else if (option ==2){
+                    cout <<"   ===== 현재 무기 강화 현황 =====   " <<endl;
+                    weapon_upgrade_view();
+                    continue;
+                }else if (option ==3){
+                    cout <<"   로비로 돌아갑니다. "<<endl;
+                    break;
+                }else{
+                    cout <<"   1(강화히기) 또는 2(무기강화현황) 또는 3(나가기)를 입력해주세요. "<<endl;
+                    continue;
+                }
+
+                
+                        
+                
+                
+            
+            }
+        }
+        
+
 };
 int Character::monster_hp=100;
 
@@ -344,32 +476,49 @@ int main(){
         std::cin >> name;
         c1 = new Character(name);
         c1->get_weapon.assign(5,0);
+        c1->weapon_upgrade_set.assign(5,0);
+        c1->damage_table = {10,100,300,1000,5000};
+        c1->critical_table = {10,50,100,300,500};
     }else if(Option==2){
         cout<<"불러올 캐릭터의 이름을 입력해주세요. : ";
         string tmp_name;
         cin >> tmp_name;
         ifstream i_player_file("player_lst.txt");
         string CN;
-        int N,R,U,L,M;
+        int N,R,U,L,M,BN,BR,BU,BL,BM;
         cin.ignore();
-        while(i_player_file >> CN >> N >> R >> U >> L >> M){
+        
+        while(i_player_file >> CN >> N >> R >> U >> L >> M >> BN >> BR >> BU >> BL >> BM){
             if(CN == tmp_name){ 
-                cout<<"플레이어 정보 : "<<CN<<" 노말무기:"<<N<<" 레어무기:"<<R<<" 유니크무기:"<<L<<" 레전더리무기:"<<M<<" 신화무기:"<<U<<endl;
+                cout<<" 플레이어 정보 : "<<CN<<" 노말무기:"<<N<<" 레어무기:"<<R<<" 유니크무기:"<<U<<" 레전더리무기:"<<L<<" 신화무기:"<<M<<endl;
+                cout<<" 무기강화 현황 : "<<CN<<" 노말무기:"<<BN<<" 레어무기:"<<BR<<" 유니크무기:"<<BU<<" 레전더리무기:"<<BL<<" 신화무기:"<<BM<<endl;
                 c1 = new Character(CN,N,R,U,L,M);
                 c1->get_weapon={N,R,U,L,M}; // 무기 소유 현황 개수 초기화
+                c1->weapon_upgrade_set={BN,BR,BU,BL,BM};
+                c1->damage_table = {10,100,300,1000,5000};
+                c1->critical_table = {10,50,100,300,500};
+                c1->bonus_weapon_damage=c1->weapon_damage_upgrade_apply();
+                c1->bonus_weapon_critical_damage=c1->weapon_critical_damage_upgrade_apply();
             }else{
                 cout<<"저장된 캐릭터가 없습니다. 게스트 모드 홍길동으로 시작합니다. "<<endl;
                 c1 = new Character("홍길동");
+                c1->damage_table = {10,100,300,1000,5000};
+                c1->critical_table = {10,50,100,300,500};
                 c1->get_weapon.assign(5,0);
+                c1->weapon_upgrade_set.assign(5,0);
             }
         }
     }else{
         cout<<"게스트 모드 홍길동으로 시작합니다."<<endl;
         c1 = new Character("홍길동");
+        c1->damage_table = {10,100,300,1000,5000};
+        c1->critical_table = {10,50,100,300,500};
         c1->get_weapon.assign(5,0);
+        c1->weapon_upgrade_set.assign(5,0);
     }
 
     c1->weapon_info.assign(3,0); // 무기 정보 초기화
+    
     
     while(1){
         cout<<endl;
@@ -378,6 +527,7 @@ int main(){
         cout<<"                 2. 사 냥 하 기      "<<endl;
         cout<<"                 3. 무 기 착 용      "<<endl;
         cout<<"                 4. 월 드 보 스      "<<endl;
+        cout<<"                 5. 무 기 강 화      "<<endl;
         cout<<"                 0. 게 임 종 료      "<<endl;
         cout<<"                 입력창 : ";
         int exe;
@@ -401,6 +551,11 @@ int main(){
         }
         case 4:{
             c1->world_boss_dps();
+            break;
+        }
+        case 5:{
+            c1->weapon_upgrade();
+            break;
         }
         default:
             break;
@@ -408,25 +563,25 @@ int main(){
         
         if(exe==0){
             cout<<"플레이어의 이름과 무기만 저장이 됩니다. "<<endl;
-            cout<<"게임저장을 하시겠습니까? ( Y / N ) ";
-            break;
+            cout<<"게임저장을 하시겠습니까? ( Y(y) / N(n) ) 그 외 입력시 로비로 돌아갑니다. ";
+            string s ;
+            cin >> s;
+            if(s=="Y" || s=="y"){
+                ofstream o_player_file("player_lst.txt");
+                o_player_file << c1->Character_name<<" "<<c1->get_weapon[0]<<" "<<c1->get_weapon[1]<<" "<<c1->get_weapon[2]<<" "<<c1->get_weapon[3]<<" "<<c1->get_weapon[4]<<" ";
+                o_player_file << c1->weapon_upgrade_set[0]<<" "<< c1->weapon_upgrade_set[1]<<" "<< c1->weapon_upgrade_set[2]<<" "<< c1->weapon_upgrade_set[3]<<" "<< c1->weapon_upgrade_set[4]<<endl;
+                o_player_file.close();
+                cout<<"저장완료."<<endl;
+                break;
+            }else if(s=="N" || s=="n"){
+                cout<<"게임을 종료합니다. "<<endl;
+                break;
+            }else{
+                continue;
+            }
+            
         }
     }
 
-    
-    string s ;
-    cin >> s;
-    if(s=="Y" || s=="y"){
-        ofstream o_player_file("player_lst.txt");
-        o_player_file << c1->Character_name<<" "<<c1->get_weapon[0]<<" "<<c1->get_weapon[1]<<" "<<c1->get_weapon[2]<<" "<<c1->get_weapon[3]<<" "<<c1->get_weapon[4]<<endl;
-        o_player_file.close();
-        cout<<"저장완료."<<endl;
-    }else{
-        cout<<"게임을 종료합니다. "<<endl;
-    }
     delete c1;
-
-    
-
-
 }
