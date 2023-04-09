@@ -49,8 +49,11 @@ class Character{
 
         void weapon_equip();
 
-        // 몬스터 공격하기
-        int monster_attack(int critical_point, int monster_hp);
+        // 몬스터 어택
+        int monster_attack(int monster_damage, int player_hp);
+
+        // 플레이어 공격하기
+        int player_attack(int critical_point, int monster_hp);
         
         // 보스 어택.
         int boss_attack(int critical_point);

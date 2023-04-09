@@ -1,23 +1,14 @@
 #include "character.h"
 
-
-
-// 필드
-int hp = 100;
-int level = 1;
-int base_attack_damage = 10;
-double critical_hit = 5;
-int critical_damage = 100;
-string weapon_grade="미장착";
-
-// 기능
-
-string Character_name; // 플레이어 이름.
-vector <int> weapon_info; // 무기데미지, 무기 치명타확률, 무기 치명타 데미지
-vector <int> get_weapon; // 인덱스순 노말 레어 유니크 레전더리 신화
 // 캐릭터 처음 생성
 Character::Character(string name){
     this->Character_name=name;
+    hp = 100;
+    level = 1;
+    base_attack_damage = 10;
+    critical_hit = 5;
+    critical_damage = 100;
+    weapon_grade="미장착";   
     cout<<name<<" 캐릭터가 생성되었습니다. "<<endl;
     cout<<endl;
 }
@@ -25,6 +16,12 @@ Character::Character(string name){
 // 캐릭터 불러 오기 캐릭터 이름과 소지했던 무기만 불러움. 그외다 초기화.
 Character::Character(string CN, int N, int R, int U, int L, int M){
     this->Character_name=CN;
+    hp = 100;
+    level = 1;
+    base_attack_damage = 10;
+    critical_hit = 5;
+    critical_damage = 100;
+    weapon_grade="미장착";   
     get_weapon.clear();
     get_weapon.push_back(N);
     get_weapon.push_back(R);
@@ -106,8 +103,14 @@ void Character::weapon_equip(){
     }
 }
 
+// 몬스터 공격
+int Character::monster_attack(int monster_damage, int player_hp){
+    cout<<"야생 몬스터가 반격하여 "<<monster_damage<<"만큼의 데미지를 입힙니다."<<endl;
+    return player_hp - monster_damage;
+}
+
 // 몬스터 공격하기
-int Character::monster_attack(int critical_point, int monster_hp){
+int Character::player_attack(int critical_point, int monster_hp){
     if(critical_point>=1 && critical_point<=getCritical_hit()){
         cout<<"**** 크리티컬!! ****"<<endl;
         cout<<"야생의 몬스터에게 "<<getCritical_damage()<<"의 데미지를 입혔습니다!!"<<endl;
@@ -152,7 +155,7 @@ void Character::hunting(){
         std::cin >> action;
         if(action==1){
             int critical_point = rand()%100+1; // 1~100까지 랜덤으로 저장.
-            tmp_monster_hp = monster_attack(critical_point,tmp_monster_hp);
+            tmp_monster_hp = player_attack(critical_point,tmp_monster_hp);
             if(tmp_monster_hp<=0){
                 cout<<"야생의 몬스터 처지!"<<endl;
                 cout<<"=== 레벨업!!! ==="<<endl;
