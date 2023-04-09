@@ -3,28 +3,28 @@
 
 using namespace std;
 
-class Shape2{
-public:
-    // 가상 함수 소멸자
-    virtual ~Shape2() {} //warning: delete called on 'Shape2' that is abstract but has non-virtual destructor [-Wdelete-abstract-non-virtual-dtor]에러코드 해결
-    // 추상 메소드 
-    virtual void draw() = 0;
-};
+// class Shape2{
+// public:
+//     // 가상 함수 소멸자
+//     virtual ~Shape2() {} //warning: delete called on 'Shape2' that is abstract but has non-virtual destructor [-Wdelete-abstract-non-virtual-dtor]에러코드 해결
+//     // 추상 메소드 
+//     virtual void draw() = 0;
+// };
 
-class Circle : public Shape2{
-public:
-    void draw(){cout <<"원 입니다."<<endl;}
-};
+// class Circle : public Shape2{
+// public:
+//     void draw(){cout <<"원 입니다."<<endl;}
+// };
 
-class Rect1 : public Shape2{
-public:
-    void draw(){cout <<"사각형 입니다."<<endl;}
-};
+// class Rect1 : public Shape2{
+// public:
+//     void draw(){cout <<"사각형 입니다."<<endl;}
+// };
 
-class Tria : public Shape2{
-public:
-    void draw(){cout <<"삼각형 입니다."<<endl;}
-};
+// class Tria : public Shape2{
+// public:
+//     void draw(){cout <<"삼각형 입니다."<<endl;}
+// };
 
 /*class Snack{
     protected:

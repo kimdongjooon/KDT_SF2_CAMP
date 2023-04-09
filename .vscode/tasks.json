@@ -1,27 +1,66 @@
+// {
+//     "tasks": [
+//         {
+//             "type": "cppbuild",
+//             "label": "C/C++: clang++ 활성 파일 빌드",
+//             "command": "/usr/bin/clang++",
+//             "args": [
+//                 "-fcolor-diagnostics",
+//                 "-fansi-escape-codes",
+//                 "-g",
+//                 "${file}",
+//                 "${fileDirname}/*.cpp",
+//                 "-o",
+//                 "${fileDirname}/${fileBasenameNoExtension}"
+//             ],
+//             "options": {
+//                 "cwd": "${fileDirname}"
+//             },
+//             "problemMatcher": [
+//                 "$gcc"
+//             ],
+//             "group": "build",
+//             "detail": "디버거에서 생성된 작업입니다."
+//         }
+//     ],
+//     "version": "2.0.0"
+// }
 {
-    "tasks": [
-        {
-            "type": "cppbuild",
-            "label": "C/C++: clang++ 활성 파일 빌드",
-            "command": "/usr/bin/clang++",
-            "args": [
-                "-fcolor-diagnostics",
-                "-fansi-escape-codes",
-                "-g",
-                "${file}",
-                "${fileDirname}/*.cpp",
-                "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
-            ],
-            "options": {
-                "cwd": "${fileDirname}"
-            },
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": "build",
-            "detail": "디버거에서 생성된 작업입니다."
-        }
-    ],
-    "version": "2.0.0"
+"options": {
+    "cwd": "${workspaceFolder}"
+  },
+  "tasks": [
+    {
+      "type": "shell",
+      "label": "build",
+      "command": "g++",
+      "args": [
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-pedantic",
+        "-std=c++17",
+        "-c",
+        "**/*.cpp",
+        "-o",
+        "${workspaceFolder}/build/obj/${fileBasenameNoExtension}.o"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "type": "shell",
+      "label": "link",
+      "command": "g++",
+      "args": [
+        "-g",
+        "${workspaceFolder}/build/obj/*.o",
+        "-o",
+        "${workspaceFolder}/build/${fileBasenameNoExtension}"
+      ],
+      "group": "build"
+    }
+  ]
 }
