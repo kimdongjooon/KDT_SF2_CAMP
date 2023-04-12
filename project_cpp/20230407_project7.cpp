@@ -99,7 +99,6 @@ class Character{
     int base_attack_damage = 10;
     double critical_hit = 5;
     int critical_damage = 100;
-    
     string weapon_grade="미장착";
 
     // 기능
@@ -373,7 +372,7 @@ class Character{
         }
         void weapon_upgrade_view(){
             for (int i = 0; i<weapon_upgrade_set.size();i++){
-                cout<<"   "<<i+1<<" : "<<grade_table[i]<<"   (+"<<weapon_upgrade_set[i]<<"강)   +"<<critical_table[i]* weapon_upgrade_set[i]<<endl;
+                cout<<"   "<<i+1<<" : "<<grade_table[i]<<"   (+"<<weapon_upgrade_set[i]<<"강)   공격력 (+"<<damage_table[i]* weapon_upgrade_set[i]<<")  치명타데미지 (+"<<critical_table[i]*weapon_upgrade_set[i]<<")"<<endl;
             }
         }
         
