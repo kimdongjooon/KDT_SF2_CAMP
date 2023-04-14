@@ -20,7 +20,7 @@ using namespace std;
 //      - 필드    
 //      hp:100, level:1, 기본공격력:10, 치명타확률:5%, 치명타 데미지:100%, 보유무기(노말, 레어, 유니크, 레전더리, 신화)
 //      - 메소드(게임기능)
-//      상태창 : 플레이어 정보를 출력
+//      상태창 : 플레이어 정보를 출력 - 플레이어의 공격력은 (최소:공격력의90% ~ 최대:공격력의110%)적용
 //      무기 장착 : 소유하고 있는 무기 장착 및 해제
 //      사냥하기 : 몬스터를 체력(100) 소환하여 플레이어가 몬스터 처치시 다음 몬스터는 추가로 50~300 체력 랜덤 상승
 //              레벨업이 되면 체력:50, 기본공격력:5, 치명타확률:0.1, 치명타 데미지:10% 증가. 
@@ -29,6 +29,7 @@ using namespace std;
 //      보스잡기 : 총 10번의 공격을 하여 총데미지 합산 및 출력.
 //      무기강화 : 강화 강화횟수 제한 x, 2개이상의 소유중인 무기를 선택하여 50%확률로 강화. 
 //               강화성공시 해당무기 공격력, 치명타데미지 만큼 캐릭터의 강화 보너스 스텟 추가.
+//               자동강화 기능 추가
 //      종료 : 게임을 종료
 // 3. 무기 클래스
 //      - 필드
@@ -135,6 +136,7 @@ class Character{
 
         // 상태창 보기
         void status(){
+            int tmp_attack_damage = base_attack_damage+weapon_info[0]+bonus_weapon_damage;
             cout<<"   ===== "<<Character_name<<"의 상태창 ====="<<endl;
             cout<<"   현재 체력 : "<<hp<<endl;
             cout<<"   현재 레벨 : "<<level<<endl;
@@ -145,7 +147,7 @@ class Character{
                 cout<<"   무기 공격력 : "<<weapon_info[0]<<" ("<<weapon_grade<<" 무기) - 착용중"<<endl;
             }
             cout<<"   무기 강화 보너스 (공격력) : "<<bonus_weapon_damage<<endl;
-            cout<<"   *** 총 공격력 : "<<getDamage()<<endl;
+            cout<<"   *** 총 공격력 : "<<(int)(tmp_attack_damage*0.9)<<" ~ "<<(int)(tmp_attack_damage*1.1)<<endl;
             cout<<"   기본 치명타 확률 : "<<critical_hit<<"%"<<endl;
             cout<<"   무기 치명타 확률 : "<<weapon_info[1]<<"%"<<endl;
             cout<<"   *** 총 치명타 확률 : "<<getCritical_hit()<<"%"<<"   (최대 100%)"<<endl;
@@ -154,7 +156,10 @@ class Character{
             cout<<"   *** 총 치명타 데미지 : "<<getCritical_damage_p()<<"%"<<endl;
         }
         int getDamage(){
-            return base_attack_damage+weapon_info[0]+bonus_weapon_damage;
+            int attack_point = rand()%21 - 10;
+            double attack_percent = (double)(100+attack_point)/100; 
+            int final_attack_damage = (int)(base_attack_damage+weapon_info[0]+bonus_weapon_damage)*attack_percent;
+            return final_attack_damage;
         }
 
         double getCritical_damage(){   
@@ -219,36 +224,46 @@ class Character{
         }
         // 몬스터 공격
         int monster_attack(int monster_damage, int player_hp){
+            
             cout<<"야생 몬스터가 반격하여 "<<monster_damage<<"만큼의 데미지를 입힙니다."<<endl;
+            
             return player_hp - monster_damage;
         }
 
 
         // 플레이어 공격하기
         int player_attack(int critical_point, int monster_hp){
+            
             if(critical_point>=1 && critical_point<=getCritical_hit()){
                 cout<<"**** 크리티컬!! ****"<<endl;
                 cout<<"야생의 몬스터에게 "<<getCritical_damage()<<"의 데미지를 입혔습니다!!"<<endl;
+                
                 return monster_hp - getCritical_damage();
             }else if(getCritical_hit()<critical_point && critical_point<=100){
                 cout<<"야생의 몬스터에게 "<<getDamage()<<"의 데미지를 입혔습니다!!"<<endl;
+                
                 return monster_hp - getDamage();
             }else{
                 cout<<"오류1"<<endl;
+                
                 return 0;
             }
         }
         
         // 보스 공격하기.
         int boss_attack(int critical_point){
+            \
             if(critical_point>=1 && critical_point<=getCritical_hit()){
                 cout<<"**** 크리티컬!! **** 월드 보스 몬스터에게 "<<getCritical_damage()<<"의 데미지를 입혔습니다!!"<<endl;
+                
                 return getCritical_damage();
             }else if(getCritical_hit()<critical_point && critical_point<=100){
                 cout<<"월드 보스 몬스터에게 "<<getDamage()<<"의 데미지를 입혔습니다!!"<<endl;
+                
                 return getDamage();
             }else{
                 cout<<"오류1"<<endl;
+                
                 return 0;
             }
         }
@@ -257,7 +272,6 @@ class Character{
         // 사냥하기
         static int monster_hp;
         void hunting(){
-            srand(time(NULL));
             cout<<"(무기 확률 - 노말:56%, 레어:30%, 유니크:10%, 레전더리:3%, 신화:1%)"<<endl;
             cout<<" 야생의 몬스터(체력 : "<<monster_hp<<" ) 등장!! "<<endl;
             int weapon_point = rand()%100+1; // 1~100까지 랜덤으로 저장해서 지정된 구간에 해당시에 무기 획득.
@@ -333,7 +347,6 @@ class Character{
 
         // 월드 보스 딜미터기 
         void world_boss_dps(){
-            srand(time(NULL));
             int total_damage=0;
             cout<<"10번의 공격을 진행합니다."<<endl;
             for(int i = 1 ; i<=10 ; i++){
@@ -402,36 +415,72 @@ class Character{
                     
                     if (get_weapon[weapon_num-1]>1){
                         cout<<"   "<<grade_table[weapon_num-1]<<"무기를 선택하셨습니다! "<<endl;
-                        cout<<"   "<<grade_table[weapon_num-1]<<"무기를 강화하시겠습니까? - 성공률 : 50% ( Y / N ) : ";
-                        string ans;
-                        cin >> ans;
-                        if(ans=="Y" || ans=="y"){
+                        cout<<"   "<<grade_table[weapon_num-1]<<"무기를 모두 강화하시겠습니까 ? - 성공률 : 50% ( Y / N ) : ";
+                        string ans1;
+                        cin >> ans1;
+                        if (ans1=="Y" || ans1=="y"){
                             srand(time(NULL));
-                            int success_point = rand()%100+1;
-                            if(1<=success_point && success_point<=50){
-                                cout <<"   "<<grade_table[weapon_num-1]<<"무기 강화 성공 !!!!"<<endl;
-                                weapon_upgrade_set[weapon_num-1]++;
-                                bonus_weapon_damage = weapon_damage_upgrade_apply();
-                                bonus_weapon_critical_damage = weapon_critical_damage_upgrade_apply();
-                                get_weapon[weapon_num-1]--;
-                            }else if(50<success_point && success_point<=100){
-                                cout <<"   "<<grade_table[weapon_num-1]<<"무기 강화 실패 ...."<<endl;
-                                get_weapon[weapon_num-1]--;
-                            }else{
-                                cout<<"오오류"<<endl;
+                            int tmp_upgrade_count = get_weapon[weapon_num-1]; // 현재 선택한 무기 보유개수
+                            int success_count = 0;
+                            for (int i = 1 ; i<tmp_upgrade_count;i++){ // 
+                                
+                                int success_point = rand()%100+1;
+                                if(get_weapon[weapon_num-1]<=1){
+                                    cout<<"오류나면 코드에러"<<endl;
+                                    break;
+                                }                                
+                                if(1<=success_point && success_point<=50){
+                                    cout <<"   "<<grade_table[weapon_num-1]<<"무기 강화 성공 !!!!"<<endl;
+                                    weapon_upgrade_set[weapon_num-1]++;
+                                    bonus_weapon_damage = weapon_damage_upgrade_apply();
+                                    bonus_weapon_critical_damage = weapon_critical_damage_upgrade_apply();
+                                    get_weapon[weapon_num-1]--;
+                                    success_count++;
+                                }else if(50<success_point && success_point<=100){
+                                    cout <<"   "<<grade_table[weapon_num-1]<<"무기 강화 실패 ...."<<endl;
+                                    get_weapon[weapon_num-1]--;
+                                }else{
+                                    cout<<"   자동강화오류"<<endl;
+                                }
+                            }
+                            cout<<"   "<<grade_table[weapon_num-1]<<"무기 총 "<<success_count<<"번 성공!!"<<endl;
+
+                        }else if (ans1=="N" || ans1=="n"){
+                            cout<<"   "<<grade_table[weapon_num-1]<<"무기를 강화하시겠습니까? - 성공률 : 50% ( Y(1) / N(2) ) : ";
+                            string ans;
+                            cin >> ans;
+                            if(ans=="Y" || ans=="y" || ans=="1"){
+                                srand(time(NULL));
+                                int success_point = rand()%100+1;
+                                if(1<=success_point && success_point<=50){
+                                    cout <<"   "<<grade_table[weapon_num-1]<<"무기 강화 성공 !!!!"<<endl;
+                                    weapon_upgrade_set[weapon_num-1]++;
+                                    bonus_weapon_damage = weapon_damage_upgrade_apply();
+                                    bonus_weapon_critical_damage = weapon_critical_damage_upgrade_apply();
+                                    get_weapon[weapon_num-1]--;
+                                }else if(50<success_point && success_point<=100){
+                                    cout <<"   "<<grade_table[weapon_num-1]<<"무기 강화 실패 ...."<<endl;
+                                    get_weapon[weapon_num-1]--;
+                                }else{
+                                    cout<<"오오류"<<endl;
+                                }
+                            }
+                            else if(ans=="N" || ans=="n" || ans=="2")
+                            {
+                                continue;
+                            }
+                            else
+                            {
+                                cout<<"Y(y) or N(n) 을 선택해주세요."<<endl;
                             }
                         }
-                        else if(ans=="N" || ans=="n")
-                        {
-                            continue;
-                        }
-                        else
-                        {
-                            cout<<"Y(y) or N(n) 을 선택해주세요."<<endl;
-                        }
+                        
 
                     }else if(get_weapon[weapon_num-1]<=1){
                         cout<<"   최소 2개이상 부터 강화할 수 있습니다."<<endl;
+                        continue;
+                    }else{
+                        cout<<"입력오류"<<endl;
                         continue;
                     }
 
@@ -541,6 +590,7 @@ int main(){
             break;
         }
         case 2:{
+            srand(time(NULL));
             c1->hunting();
             break;
         }
@@ -549,6 +599,7 @@ int main(){
             break;
         }
         case 4:{
+            srand(time(NULL));
             c1->world_boss_dps();
             break;
         }
